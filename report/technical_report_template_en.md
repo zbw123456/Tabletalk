@@ -9,7 +9,7 @@ This test aims to build a runnable pipeline for narrative audio:
 
 Please include:
 - dataset name and source link,
-- sampling strategy (for example, 50–200 clips),
+- sampling strategy (Applicants may work with a subset of the dataset, for example 50–200 audio recordings),
 - why this sampling is reasonable (label balance, duration coverage, etc.).
 
 ## 2. Task 1: Audio Processing & Feature Engineering
