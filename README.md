@@ -59,7 +59,7 @@ python src/03_extract_features.py \
 
 ---
 
-后续我会继续补：
+当前版本已包含：
 - 分类训练与评估（Task 2）
 - ASR 转写与评估（Task 3）
 - 检索原型（Task 4）
