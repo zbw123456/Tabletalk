@@ -1,6 +1,6 @@
 # TableTalk Technical Report (Draft - English)
 
-> Note: this draft uses a synthetic debugging dataset (24 clips, calm/urgency). Final metrics should be replaced by results from real data.
+> Note: this version is based on a RAVDESS subset (200 clips, 8 emotion classes, 25 clips each).
 
 ## 1. Project Goal
 A complete prototype pipeline was implemented with four stages:
@@ -13,6 +13,7 @@ A complete prototype pipeline was implemented with four stages:
 - Audio was normalized to 16 kHz mono.
 - Peak normalization was applied.
 - Extracted features: `MFCC`, `pitch`, `spectral centroid`, `energy`, `duration`.
+- Data split: train=140, val=20, test=40.
 
 The purpose of this stage is to convert raw audio into a consistent tabular format for both modeling and retrieval.
 
@@ -23,14 +24,14 @@ Figures:
 
 ## 3. Task 2: Narrative Tone Classification
 - Candidate models: `LogisticRegression`, `RandomForest`.
-- Best model in this run: `LogisticRegression` (validation `macro F1=1.0`).
+- Best model in this run: `LogisticRegression` (validation `macro F1=0.3589`).
 
 Test metrics:
-- Accuracy: 1.0
-- Macro-F1: 1.0
-- Weighted-F1: 1.0
+- Accuracy: 0.35
+- Macro-F1: 0.3427
+- Weighted-F1: 0.3427
 
-Because this is a simple synthetic dataset, separability is high. Real-world data is expected to be more challenging.
+With simple handcrafted features + classical models, 8-class emotion classification remains challenging. These numbers are used as a baseline for next iterations.
 
 References:
 - [test_metrics.json](../outputs/metrics/test_metrics.json)
@@ -39,13 +40,14 @@ References:
 
 ## 4. Task 3: ASR Transcription
 - Model: Whisper (`tiny`).
-- 24 clips were transcribed and saved.
+- 200 clips were transcribed and saved.
 
-ASR metrics (for pipeline verification):
-- WER: 0.0
-- CER: 0.0
+ASR metrics (current status):
+- WER: N/A
+- CER: N/A
+- Reason: no manual references matched to the current 200 processed clips yet.
 
-This result validates the evaluation path, but it should not be treated as final quality on real data.
+A labeling template has been prepared at `data/transcripts/references_template.csv`.
 
 References:
 - [transcripts.csv](../data/transcripts/transcripts.csv)
@@ -62,9 +64,9 @@ Result files:
 - [results.csv](../outputs/retrieval/results.csv)
 
 ## 6. Limitations & Next Steps
-- Current results are from synthetic data and may not transfer to real narrative speech.
+- Current classifier still relies on handcrafted features and has limited multi-class discrimination.
 - Next steps:
-  1) run on real subsets from RAVDESS / CREMA-D / Common Voice,
-  2) evaluate ASR with manually prepared references,
-  3) add pretrained audio embeddings for better generalization,
+  1) fill `references_template.csv` for a subset and report WER/CER,
+  2) add pretrained audio embeddings (wav2vec2 / HuBERT) for better generalization,
+  3) run per-class error analysis and improve feature/model choices,
   4) improve retrieval with interpretable weighted scoring.
