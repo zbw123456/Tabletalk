@@ -1,0 +1,27 @@
+project_name: tabletalk-test
+seed: 42
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  features_dir: data/features
+  transcripts_dir: data/transcripts
+
+prepare_dataset:
+  min_duration_sec: 0.8
+  max_duration_sec: 30.0
+  test_size: 0.2
+  val_size: 0.1
+  audio_extensions: [".wav", ".mp3", ".flac", ".m4a", ".ogg"]
+
+preprocess_audio:
+  target_sr: 16000
+  mono: true
+  normalize_peak: 0.95
+  trim_silence: false
+  top_db: 25
+
+features:
+  n_mfcc: 13
+  frame_length: 2048
+  hop_length: 512
