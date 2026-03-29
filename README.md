@@ -147,4 +147,7 @@ python src/03_extract_features.py \
 
 ## 13. 提交材料模板
 
-- 报告模板：`report/technical_report_template.md`
+- 中文模板：`report/technical_report_template.md`
+- 英文模板：`report/technical_report_template_en.md`
+- 中文草稿：`report/technical_report_draft.md`
+- 英文草稿：`report/technical_report_draft_en.md`
