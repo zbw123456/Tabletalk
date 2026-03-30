@@ -1,0 +1,207 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{caption}
+
+\title{TableTalk Technical Test Report\\\large Narrative Voice Processing and Classification}
+\author{Bowen Zhang}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Overview}
+This report summarizes the full pipeline run on a RAVDESS subset (200 speech recordings):
+(1) audio preprocessing and feature extraction,
+(2) narrative tone classification,
+(3) AI-based transcription,
+and (4) narrative audio retrieval simulation.
+
+\section{Dataset and Split}
+Data source: RAVDESS Emotional Speech Dataset (speech subset).
+A balanced subset of 200 clips was used (8 emotion classes, 25 clips per class), consistent with the assignment recommendation of using a subset (50--200 recordings).
+
+\begin{table}[H]
+\centering
+\caption{Dataset split summary}
+\begin{tabular}{lccc}
+\toprule
+Split & Train & Validation & Test \\
+\midrule
+Clip count & 140 & 20 & 40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Label distribution (balanced subset)}
+\begin{tabular}{lc}
+\toprule
+Label & Count \\
+\midrule
+angry & 25 \\
+calm & 25 \\
+disgust & 25 \\
+fearful & 25 \\
+happy & 25 \\
+neutral & 25 \\
+sad & 25 \\
+surprised & 25 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{outputs/metrics/figures/split_distribution.png}
+\caption{Split distribution}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{outputs/metrics/figures/label_distribution.png}
+\caption{Label distribution}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{outputs/metrics/figures/duration_kde.png}
+\caption{Duration KDE by label}
+\end{figure}
+
+\section{Task 1: Audio Processing and Feature Engineering}
+Pipeline summary:
+\begin{itemize}
+  \item Resampling to 16 kHz, mono conversion.
+  \item Peak normalization.
+  \item Feature extraction: duration, pitch statistics, spectral centroid statistics, energy statistics, and MFCC statistics.
+  \item Structured output for modeling: one row per clip in \texttt{data/features/features.csv}.
+\end{itemize}
+
+\section{Task 2: Narrative Tone Classification}
+Candidate models were Logistic Regression and Random Forest.
+Model selection on validation split:
+
+\begin{table}[H]
+\centering
+\caption{Validation model comparison (macro-F1)}
+\begin{tabular}{lc}
+\toprule
+Model & Validation macro-F1 \\
+\midrule
+Logistic Regression & 0.3589 \\
+Random Forest & 0.2524 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Best model: \textbf{Logistic Regression}.
+
+\begin{table}[H]
+\centering
+\caption{Test metrics (best model)}
+\begin{tabular}{lc}
+\toprule
+Metric & Value \\
+\midrule
+Accuracy & 0.3500 \\
+Macro-F1 & 0.3427 \\
+Weighted-F1 & 0.3427 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Per-class test results}
+\begin{tabular}{lccc}
+\toprule
+Class & Precision & Recall & F1 \\
+\midrule
+angry & 0.5000 & 0.2000 & 0.2857 \\
+calm & 0.5000 & 0.4000 & 0.4444 \\
+disgust & 0.4000 & 0.4000 & 0.4000 \\
+fearful & 0.4286 & 0.6000 & 0.5000 \\
+happy & 0.0000 & 0.0000 & 0.0000 \\
+neutral & 0.5000 & 0.4000 & 0.4444 \\
+sad & 0.1429 & 0.2000 & 0.1667 \\
+surprised & 0.4286 & 0.6000 & 0.5000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.68\textwidth]{outputs/metrics/figures/confusion_matrix.png}
+\caption{Confusion matrix on test split}
+\end{figure}
+
+\paragraph{Short discussion.}
+The 8-class setup is non-trivial with handcrafted features and a small subset size.
+Current results are above random baseline ($1/8=12.5\%$) but still modest, indicating room for stronger representations (e.g., pretrained speech embeddings) and further tuning.
+
+\section{Task 3: AI-Based Transcription}
+ASR model: Whisper (\texttt{tiny}).
+A total of 200 clips were transcribed and evaluated against RAVDESS canonical statements.
+
+\begin{table}[H]
+\centering
+\caption{ASR evaluation}
+\begin{tabular}{lc}
+\toprule
+Metric & Value \\
+\midrule
+Pairs evaluated & 200 \\
+WER & 0.0658 \\
+CER & 0.0359 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Short discussion.}
+The transcription pipeline is stable on this subset (200/200 processed).
+The observed WER/CER indicates generally reliable recognition for the limited phrase set in RAVDESS.
+
+\section{Task 4: Narrative Audio Retrieval (TableTalk Simulation)}
+A rule-based retrieval prototype was implemented using label, duration, acoustic features, and transcript text.
+
+\begin{table}[H]
+\centering
+\caption{Example retrieval queries and returned results}
+\begin{tabular}{p{0.62\textwidth}c}
+\toprule
+Query & Hits \\
+\midrule
+\texttt{"calm narration >4 seconds"} & 9 \\
+\texttt{"calm narration >4 seconds"} (saved demo file) & 10 \\
+\texttt{"high-energy speech"} & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Result files:
+\begin{itemize}
+  \item \texttt{outputs/retrieval/results.csv}
+  \item \texttt{outputs/retrieval/results\_calm.csv}
+  \item \texttt{outputs/retrieval/results\_high\_energy.csv}
+\end{itemize}
+
+\paragraph{Short discussion.}
+The prototype supports interpretable filtering and quick experimentation.
+For broader narrative search, the next step is to add learned embeddings and a weighted ranking function.
+
+\section{Reproducibility and Artifacts}
+Key artifacts generated in this run:
+\begin{itemize}
+  \item Classification metrics: \texttt{outputs/metrics/test\_metrics.json}
+  \item Classification report: \texttt{outputs/metrics/test\_classification\_report.json}
+  \item ASR metrics: \texttt{outputs/metrics/asr\_metrics.json}
+  \item Figures: \texttt{outputs/metrics/figures/*.png}
+\end{itemize}
+
+\end{document}
