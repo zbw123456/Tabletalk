@@ -1,5 +1,7 @@
 # TableTalk Technical Test - Starter Pipeline
 
+The English version is provided below.
+
 本仓库按测试任务拆成可逐步执行的脚本。
 
 ## 1. 安装依赖
